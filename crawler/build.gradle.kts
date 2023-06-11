@@ -31,6 +31,12 @@ dependencies {
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	annotationProcessor("org.projectlombok:lombok")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+	// selenium
+	// https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java
+	implementation("org.seleniumhq.selenium:selenium-java:4.10.0")
+
+
 }
 
 tasks.withType<KotlinCompile> {
