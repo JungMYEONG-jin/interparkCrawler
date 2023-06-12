@@ -20,7 +20,8 @@ class CrawlerApplicationTests {
 	fun crawlerTest() {
 		// set property
 		val webDriverID = "webdriver.chrome.driver"
-		val webDriverPath = "/home/godcoder/interpark/crawler/src/main/resources/static/chromedriver"
+//		val webDriverPath = "/home/godcoder/interpark/crawler/src/main/resources/static/chromedriver"
+		val webDriverPath = "/Users/a60156077/interpark/interparkCrawler/crawler/src/main/resources/static/chromedriver"
 		System.setProperty(webDriverID, webDriverPath)
 
 		// chrome option
@@ -34,15 +35,21 @@ class CrawlerApplicationTests {
 		// load
 		val driver = ChromeDriver(options)
 
-		val baseUrl: String = "https://www.google.com/search?q=interpark"
+		val baseUrl: String = "https://tickets.interpark.com/goods/23004388"
 
 		val contents = mutableListOf<String>()
-
 		try{
 			driver.get(baseUrl)
-			for (i in 1 until 4) {
-				val doc: WebElement = driver.findElement(By.xpath("//*[@id=\"rso\"]/div[$i]"))
-				println(doc.text)
+			// find casting content
+			val castingElement: WebElement? = driver.findElement(By.xpath("//div[contains(text(), 'content casting')]"))
+			if (castingElement != null) {
+				val castingList = castingElement.findElement(By.xpath("//div/ul[contains(text(), castingList]"))
+				if (castingList != null) {
+					val listItems: List<WebElement> = castingList.findElements(By.tagName("li"))
+					for (listItem in listItems) {
+						println("listItem = ${listItem.text}")
+					}
+				}
 			}
 		}catch (e: Exception){
 			e.printStackTrace()
