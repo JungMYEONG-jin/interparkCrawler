@@ -109,6 +109,12 @@ class CrawlerApplicationTests {
 				}
 			}
 
+
+			// rest service
+			// call artist add
+
+			// call performance add
+
 		}catch (e: Exception){
 			e.printStackTrace()
 		}finally {
