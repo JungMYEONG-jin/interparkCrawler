@@ -2,17 +2,21 @@ package com.arton.crawler
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.openqa.selenium.By
+import org.openqa.selenium.WebDriver
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.chrome.ChromeOptions
+import org.openqa.selenium.support.ui.ExpectedConditions
+import org.openqa.selenium.support.ui.WebDriverWait
 import org.springframework.stereotype.Service
+import java.time.Duration
 
 @Service
 class CrawlerService (
     private val objectMapper: ObjectMapper
 )
 {
-    fun getInfo(baseUrl: String): String {
+    fun getInfo(genre: String, baseUrl: String): String {
         val webDriverID = "webdriver.chrome.driver"
         val webDriverPath = "/home/godcoder/interpark/crawler/src/main/resources/static/chromedriver"
 //		val webDriverPath = "/Users/a60156077/interpark/interparkCrawler/crawler/src/main/resources/static/chromedriver"
@@ -24,18 +28,21 @@ class CrawlerService (
         options.addArguments("--start-maximized")
         options.addArguments("--disable-popup-blocking")
         options.addArguments("--disable-default-apps")
-        options.addArguments("--headless")
-
+//        options.addArguments("--headless")
         // load
         val driver = ChromeDriver(options)
+        val wait = WebDriverWait(driver, Duration.ofSeconds(5))
         val performanceCreateDTO: PerformanceCreateDTO = PerformanceCreateDTO()
         try{
             driver.get(baseUrl)
             // set link
             performanceCreateDTO.link = baseUrl
+            // set genre
+            performanceCreateDTO.performanceType = genre
             // find title
             try{
-                val titleElement = driver.findElement(By.xpath("//h2[@class='prdTitle']"))
+                val titleElement = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//h2[@class='prdTitle']")))
+//                val titleElement = driver.findElement(By.xpath("//h2[@class='prdTitle']"))
                 if (titleElement != null) {
                     performanceCreateDTO.title = titleElement.text
                 }
