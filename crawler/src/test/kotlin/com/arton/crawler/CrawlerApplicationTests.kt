@@ -44,6 +44,8 @@ class CrawlerApplicationTests {
 		try{
 			driver.get(baseUrl)
 			val performanceCreateDTO: PerformanceCreateDTO = PerformanceCreateDTO()
+			// set link
+			performanceCreateDTO.link = baseUrl
 			// find title
 			try{
 				val titleElement = driver.findElement(By.xpath("//h2[@class='prdTitle']"))
