@@ -103,12 +103,22 @@ class CrawlerApplicationTests {
 										val infoDesc =
 											summaryLi.findElement(By.xpath("div[@class='infoDesc']/p[@class='infoText']"))
 										if (infoDesc != null) {
-											if (infoLabel.text == "관람연령") {
-												if (!infoDesc.text.contains("전체")) {
-													val age = infoDesc.text.replace(Regex("[^0-9]"), "")
-													performanceCreateDTO.limitAge = age
+											if (!infoDesc.text.contains("전체")) {
+												var age = infoDesc.text.replace(Regex("[^0-9]"), "")
+												if (infoDesc.text.contains("개월")) {
+													age = (age.toInt() / 12).toString()
 												}
+												performanceCreateDTO.limitAge = age
 											}
+										}
+									}
+
+									"공연시간" ->{
+										val infoDesc =
+											summaryLi.findElement(By.xpath("div[@class='infoDesc']/p[@class='infoText']"))
+										if (infoDesc != null) {
+											val runningTime = infoDesc.text.replace(Regex("[^0-9]"), "")
+											performanceCreateDTO.runningTime = runningTime
 										}
 									}
 
