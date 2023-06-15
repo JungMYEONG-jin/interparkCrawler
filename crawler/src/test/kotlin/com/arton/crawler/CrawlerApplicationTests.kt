@@ -1,5 +1,7 @@
 package com.arton.crawler
 
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.openqa.selenium.By
 import org.openqa.selenium.chrome.ChromeDriver
@@ -28,65 +30,8 @@ class CrawlerApplicationTests {
 
 	@Test
 	fun crawlerTest() {
-		val webDriverID = "webdriver.chrome.driver"
-		val webDriverPath = System.getProperty("user.dir") + driverPath
-		System.setProperty(webDriverID, webDriverPath)
-
-		// chrome option
-		val options: ChromeOptions = ChromeOptions()
-		options.setBinary("")
-		options.addArguments("--start-maximized")
-		options.addArguments("--disable-popup-blocking")
-		options.addArguments("--disable-default-apps")
-//        options.addArguments("--headless")
-		// load
-		val driver = ChromeDriver(options)
-
-		val baseUrl = "https://ticket.interpark.com/TiKi/Special/TPRegionReserve.asp?ImgYn=Y&Ca=&Region=42001&RegionName=%BC%AD%BF%EF"
-		try{
-			driver.get(baseUrl)
-
-			val gp = driver.findElement(By.xpath("//div[@class='Gp']"))
-			val objs = gp.findElements(By.xpath("//div[@class='obj']"))
-			println("contents = ${objs.size}")
-			for (obj in objs) {
-				val a = obj.findElement(By.xpath("div[@class='obj_tit']/a"))
-				val name = a.getAttribute("name")
-				when (name) {
-					"btn_genre_musical", "btn_genre_concert" -> {
-						var genre = "뮤지컬"
-						if (name == "btn_genre_concert")
-							genre = "콘서트"
-						val Gp = obj.findElement(By.xpath("div[@class='Gp']"))
-						val contents = Gp.findElements(By.xpath("div[@class='content']"))
-						// do crawling
-						for (content in contents) {
-							val a = content.findElement(By.xpath("dl/dd[@class='name']/a"))
-							val href = a.getAttribute("href")
-							// do service
-							val info = crawlerService.getInfo(genre, href)
-							crawlerService.addPerformance("http://aws.hancy.kr:8333/performance/crawler", info)
-						}
-					}
-//					"btn_genre_concert" ->{
-//						val Gp = obj.findElement(By.xpath("div[@class='Gp']"))
-//						val contents = Gp.findElements(By.xpath("div[@class='content']"))
-//						// do crawling
-//						for (content in contents) {
-//							val a = content.findElement(By.xpath("dl/dd[@class='name']/a"))
-//							val href = a.getAttribute("href")
-//							// do service
-//							val info = crawlerService.getInfo("뮤지컬", href)
-//							crawlerService.addPerformance("http://aws.hancy.kr:8333/performance/crawler", info)
-//						}
-//					}
-				}
-			}
-
-		}catch (e: Exception){
-
-		}finally {
-			driver.close()
+		runBlocking {
+			crawlerService.travelInterPark()
 		}
 	}
 }

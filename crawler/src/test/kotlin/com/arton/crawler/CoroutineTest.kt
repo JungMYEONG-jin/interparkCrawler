@@ -8,8 +8,6 @@ class CoroutineTest {
 
     @Test
     internal fun runBlockingTest() {
-        runBlocking{
-            delay
-        }
+
     }
 }
