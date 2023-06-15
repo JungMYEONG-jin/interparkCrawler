@@ -38,7 +38,7 @@ class CrawlerService (
         header.contentType = MediaType.APPLICATION_JSON
         val entity = HttpEntity<String>(body, header)
         // uri build
-        val uri = UriComponentsBuilder.fromHttpUrl("http://aws.hancy.kr:8333/performance/crawler").build()
+        val uri = UriComponentsBuilder.fromHttpUrl(url).build()
         // post
         val resultMap = restTemplate.exchange(uri.toString(), HttpMethod.POST, entity, Map::class.java)
         if (resultMap.statusCode.isError) {

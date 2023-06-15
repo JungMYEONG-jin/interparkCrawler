@@ -36,6 +36,8 @@ dependencies {
 	// selenium
 	// https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java
 	implementation("org.seleniumhq.selenium:selenium-java:4.10.0")
+	// rest template
+	implementation("org.apache.httpcomponents.client5:httpclient5:5.0.3")
 
 
 }
