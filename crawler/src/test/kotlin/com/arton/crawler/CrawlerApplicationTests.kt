@@ -31,8 +31,8 @@ class CrawlerApplicationTests {
 //		val baseUrl: String = "https://tickets.interpark.com/goods/23007049"
 //		val baseUrl: String = "https://tickets.interpark.com/goods/23007654"
 //		val baseUrl: String = "https://tickets.interpark.com/goods/23005708"
-		val info = crawlerService.getInfo("뮤지컬", "https://tickets.interpark.com/goods/23005374")
-		println("info = ${info}")
+//		val info = crawlerService.getInfo("뮤지컬", "https://tickets.interpark.com/goods/23005374")
+//		println("info = ${info}")
 
 
 		val webDriverID = "webdriver.chrome.driver"
@@ -51,10 +51,8 @@ class CrawlerApplicationTests {
 		val driver = ChromeDriver(options)
 
 		val baseUrl = "https://ticket.interpark.com/TiKi/Special/TPRegionReserve.asp?ImgYn=Y&Ca=&Region=42001&RegionName=%BC%AD%BF%EF"
-//		val baseUrl = "https://ticket.interpark.com/TiKi/Special/TPRegionReserve.asp?ImgYn=Y&Ca=&Region=42001&RegionName=%BC%AD%BF%EF#btn_genre_concert"
 		try{
 			driver.get(baseUrl)
-
 
 			val gp = driver.findElement(By.xpath("//div[@class='Gp']"))
 			val objs = gp.findElements(By.xpath("//div[@class='obj']"))
@@ -63,7 +61,10 @@ class CrawlerApplicationTests {
 				val a = obj.findElement(By.xpath("div[@class='obj_tit']/a"))
 				val name = a.getAttribute("name")
 				when (name) {
-					"btn_genre_musical" -> {
+					"btn_genre_musical", "btn_genre_concert" -> {
+						var genre: String = "뮤지컬"
+						if (name == "btn_genre_concert")
+							genre = "콘서트"
 						val Gp = obj.findElement(By.xpath("div[@class='Gp']"))
 						val contents = Gp.findElements(By.xpath("div[@class='content']"))
 						// do crawling
@@ -71,22 +72,22 @@ class CrawlerApplicationTests {
 							val a = content.findElement(By.xpath("dl/dd[@class='name']/a"))
 							val href = a.getAttribute("href")
 							// do service
-							val info = crawlerService.getInfo("뮤지컬", href)
-
-							println("info = ${info}")
+							val info = crawlerService.getInfo(genre, href)
+							crawlerService.addPerformance("http://aws.hancy.kr:8333/performance/crawler", info)
 						}
 					}
-					"btn_genre_concert" ->{
-						val Gp = obj.findElement(By.xpath("div[@class='Gp']"))
-						val contents = Gp.findElements(By.xpath("div[@class='content']"))
-						// do crawling
-						for (content in contents) {
+//					"btn_genre_concert" ->{
+//						val Gp = obj.findElement(By.xpath("div[@class='Gp']"))
+//						val contents = Gp.findElements(By.xpath("div[@class='content']"))
+//						// do crawling
+//						for (content in contents) {
 //							val a = content.findElement(By.xpath("dl/dd[@class='name']/a"))
 //							val href = a.getAttribute("href")
 //							// do service
-//							crawlerService.getInfo("콘서트", href)
-						}
-					}
+//							val info = crawlerService.getInfo("뮤지컬", href)
+//							crawlerService.addPerformance("http://aws.hancy.kr:8333/performance/crawler", info)
+//						}
+//					}
 				}
 			}
 

@@ -50,7 +50,6 @@ class CrawlerService (
     fun getInfo(genre: String, baseUrl: String): String {
         val webDriverID = "webdriver.chrome.driver"
         val webDriverPath = System.getProperty("user.dir") + driverPath
-//		val webDriverPath = "/Users/a60156077/interpark/interparkCrawler/crawler/src/main/resources/static/chromedriver"
         System.setProperty(webDriverID, webDriverPath)
 
         // chrome option
