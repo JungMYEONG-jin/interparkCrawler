@@ -1,9 +1,7 @@
 package com.arton.crawler
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.openqa.selenium.By
 import org.openqa.selenium.WebDriver
 import org.openqa.selenium.WebElement
@@ -21,6 +19,9 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriComponentsBuilder
 import java.time.Duration
+import java.util.concurrent.Executors
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
 
 @Service
 class CrawlerService (
@@ -31,7 +32,8 @@ class CrawlerService (
     var driverPath: String,
 )
 {
-    suspend fun travelInterPark() {
+    val threadPool: ThreadPoolExecutor = Executors.newFixedThreadPool(3) as ThreadPoolExecutor
+    fun travelInterPark() {
         val webDriverID = "webdriver.chrome.driver"
         val webDriverPath = System.getProperty("user.dir") + driverPath
         System.setProperty(webDriverID, webDriverPath)
@@ -42,7 +44,7 @@ class CrawlerService (
         options.addArguments("--start-maximized")
         options.addArguments("--disable-popup-blocking")
         options.addArguments("--disable-default-apps")
-//        options.addArguments("--headless")
+        options.addArguments("--headless")
         // load
         val driver = ChromeDriver(options)
 
@@ -63,32 +65,33 @@ class CrawlerService (
                         val Gp = obj.findElement(By.xpath("div[@class='Gp']"))
                         val contents = Gp.findElements(By.xpath("div[@class='content']"))
                         // do crawling using coroutine
-                        coroutineScope{
-                            for (content in contents) {
-                                launch{
-                                    delay(300L)
-                                    val a = content.findElement(By.xpath("dl/dd[@class='name']/a"))
-                                    val href = a.getAttribute("href")
-                                    // do service
-                                    val info = getInfo(genre, href)
-                                    println("href = ${href} info = ${info}")
-//                                    addPerformance("http://aws.hancy.kr:8333/performance/crawler", info)
+                        val coroutineScope = CoroutineScope(Dispatchers.Default)
+                        runBlocking {
+                            withContext(coroutineScope.coroutineContext) {
+                                // Run your coroutines here
+                                contents.forEach { content ->
+                                    threadPool.submit {
+                                        coroutineScope.launch {
+                                            val a = content.findElement(By.xpath("dl/dd[@class='name']/a"))
+                                            val href = a.getAttribute("href")
+                                            // do service
+                                            val info = getInfo(genre, href)
+                                            addPerformance("http://aws.hancy.kr:8333/performance/crawler", info)
+                                        }
+                                    }
                                 }
                             }
+                            threadPool.shutdown()
                         }
+//                        for (content in contents) {
+//                            val a = content.findElement(By.xpath("dl/dd[@class='name']/a"))
+//                            val href = a.getAttribute("href")
+//                            // do service
+//                            val info = getInfo(genre, href)
+//                            println("href = ${href} info = ${info}")
+////                                   addPerformance("http://aws.hancy.kr:8333/performance/crawler", info)
+//                        }
                     }
-//					"btn_genre_concert" ->{
-//						val Gp = obj.findElement(By.xpath("div[@class='Gp']"))
-//						val contents = Gp.findElements(By.xpath("div[@class='content']"))
-//						// do crawling
-//						for (content in contents) {
-//							val a = content.findElement(By.xpath("dl/dd[@class='name']/a"))
-//							val href = a.getAttribute("href")
-//							// do service
-//							val info = crawlerService.getInfo("뮤지컬", href)
-//							crawlerService.addPerformance("http://aws.hancy.kr:8333/performance/crawler", info)
-//						}
-//					}
                 }
             }
 
@@ -132,7 +135,7 @@ class CrawlerService (
         options.addArguments("--start-maximized")
         options.addArguments("--disable-popup-blocking")
         options.addArguments("--disable-default-apps")
-//        options.addArguments("--headless")
+        options.addArguments("--headless")
         // load
         val driver = ChromeDriver(options)
         val wait = WebDriverWait(driver, Duration.ofSeconds(5))
@@ -274,6 +277,7 @@ class CrawlerService (
             } catch (e: Exception) {
 
             }
+
             return objectMapper.writeValueAsString(performanceCreateDTO)
         }catch (e: Exception){
 

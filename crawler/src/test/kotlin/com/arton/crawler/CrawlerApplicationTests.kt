@@ -30,8 +30,6 @@ class CrawlerApplicationTests {
 
 	@Test
 	fun crawlerTest() {
-		runBlocking {
-			crawlerService.travelInterPark()
-		}
+		crawlerService.travelInterPark()
 	}
 }
