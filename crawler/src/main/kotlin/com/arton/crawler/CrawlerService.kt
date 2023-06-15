@@ -117,7 +117,7 @@ class CrawlerService (
         options.addArguments("--start-maximized")
         options.addArguments("--disable-popup-blocking")
         options.addArguments("--disable-default-apps")
-        options.addArguments("--headless")
+//        options.addArguments("--headless")
         // load
         val driver = ChromeDriver(options)
         val wait = WebDriverWait(driver, Duration.ofSeconds(5))
@@ -137,6 +137,18 @@ class CrawlerService (
             }catch (e: Exception){
 
             }
+            // if pop up
+            try {
+                val popup = driver.findElement(By.xpath("//div[@class='popupWrap']"))
+                if (popup != null){
+                    val closeButton = popup.findElement(By.xpath("//div[@class='popupFooter']/button"))
+                    if (closeButton != null)
+                        closeButton.click()
+                }
+            } catch (e: Exception) {
+
+            }
+
 
             // find summary info
             try {
@@ -247,6 +259,15 @@ class CrawlerService (
             try {
                 val castingElement: WebElement? = driver.findElement(By.xpath("//div[@class='content casting']"))
                 if (castingElement != null) {
+                    try {
+                        val seeMore = castingElement.findElement(By.xpath("//div/a"))
+                        if (seeMore != null) {
+                            seeMore.click()
+//                            println("not null")
+                        }
+                    } catch (e: Exception) {
+                        println("e ${e}")
+                    }
                     val castingList = castingElement.findElement(By.xpath("//div/ul[@class='castingList']"))
                     if (castingList != null) {
                         val listItems: List<WebElement> = castingList.findElements(By.tagName("li"))
