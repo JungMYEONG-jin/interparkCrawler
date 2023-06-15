@@ -32,7 +32,6 @@ class CrawlerService (
     var driverPath: String,
 )
 {
-    val threadPool: ThreadPoolExecutor = Executors.newFixedThreadPool(3) as ThreadPoolExecutor
     fun travelInterPark() {
         val webDriverID = "webdriver.chrome.driver"
         val webDriverPath = System.getProperty("user.dir") + driverPath
@@ -44,15 +43,15 @@ class CrawlerService (
         options.addArguments("--start-maximized")
         options.addArguments("--disable-popup-blocking")
         options.addArguments("--disable-default-apps")
-        options.addArguments("--headless")
+//        options.addArguments("--headless")
         // load
         val driver = ChromeDriver(options)
-
+        val wait = WebDriverWait(driver, Duration.ofSeconds(5))
         val baseUrl = "https://ticket.interpark.com/TiKi/Special/TPRegionReserve.asp?ImgYn=Y&Ca=&Region=42001&RegionName=%BC%AD%BF%EF"
         try{
             driver.get(baseUrl)
 
-            val gp = driver.findElement(By.xpath("//div[@class='Gp']"))
+            val gp = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='Gp']")))
             val objs = gp.findElements(By.xpath("//div[@class='obj']"))
             for (obj in objs) {
                 val a = obj.findElement(By.xpath("div[@class='obj_tit']/a"))
@@ -65,32 +64,13 @@ class CrawlerService (
                         val Gp = obj.findElement(By.xpath("div[@class='Gp']"))
                         val contents = Gp.findElements(By.xpath("div[@class='content']"))
                         // do crawling using coroutine
-                        val coroutineScope = CoroutineScope(Dispatchers.Default)
-                        runBlocking {
-                            withContext(coroutineScope.coroutineContext) {
-                                // Run your coroutines here
-                                contents.forEach { content ->
-                                    threadPool.submit {
-                                        coroutineScope.launch {
-                                            val a = content.findElement(By.xpath("dl/dd[@class='name']/a"))
-                                            val href = a.getAttribute("href")
-                                            // do service
-                                            val info = getInfo(genre, href)
-                                            addPerformance("http://aws.hancy.kr:8333/performance/crawler", info)
-                                        }
-                                    }
-                                }
-                            }
-                            threadPool.shutdown()
+                        for (content in contents) {
+                            val a = content.findElement(By.xpath("dl/dd[@class='name']/a"))
+                            val href = a.getAttribute("href")
+                            // do service
+                            val info = getInfo(genre, href)
+                            addPerformance("http://aws.hancy.kr:8333/performance/crawler", info)
                         }
-//                        for (content in contents) {
-//                            val a = content.findElement(By.xpath("dl/dd[@class='name']/a"))
-//                            val href = a.getAttribute("href")
-//                            // do service
-//                            val info = getInfo(genre, href)
-//                            println("href = ${href} info = ${info}")
-////                                   addPerformance("http://aws.hancy.kr:8333/performance/crawler", info)
-//                        }
                     }
                 }
             }
@@ -234,6 +214,7 @@ class CrawlerService (
                                             // split date
                                             val split = dates.split("~")
                                             performanceCreateDTO.startDate = split[0]
+                                            performanceCreateDTO.endDate = split[0]
                                             if (split.size == 2)
                                                 performanceCreateDTO.endDate = split[1]
                                         }
