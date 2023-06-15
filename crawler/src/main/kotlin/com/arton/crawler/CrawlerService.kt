@@ -1,6 +1,9 @@
 package com.arton.crawler
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.openqa.selenium.By
 import org.openqa.selenium.WebDriver
 import org.openqa.selenium.WebElement
@@ -28,7 +31,7 @@ class CrawlerService (
     var driverPath: String,
 )
 {
-    fun travelInterPark() {
+    suspend fun travelInterPark() {
         val webDriverID = "webdriver.chrome.driver"
         val webDriverPath = System.getProperty("user.dir") + driverPath
         System.setProperty(webDriverID, webDriverPath)
@@ -59,13 +62,19 @@ class CrawlerService (
                             genre = "콘서트"
                         val Gp = obj.findElement(By.xpath("div[@class='Gp']"))
                         val contents = Gp.findElements(By.xpath("div[@class='content']"))
-                        // do crawling
-                        for (content in contents) {
-                            val a = content.findElement(By.xpath("dl/dd[@class='name']/a"))
-                            val href = a.getAttribute("href")
-                            // do service
-                            val info = getInfo(genre, href)
-                            addPerformance("http://aws.hancy.kr:8333/performance/crawler", info)
+                        // do crawling using coroutine
+                        coroutineScope{
+                            for (content in contents) {
+                                launch{
+                                    delay(300L)
+                                    val a = content.findElement(By.xpath("dl/dd[@class='name']/a"))
+                                    val href = a.getAttribute("href")
+                                    // do service
+                                    val info = getInfo(genre, href)
+                                    println("href = ${href} info = ${info}")
+//                                    addPerformance("http://aws.hancy.kr:8333/performance/crawler", info)
+                                }
+                            }
                         }
                     }
 //					"btn_genre_concert" ->{
@@ -93,6 +102,7 @@ class CrawlerService (
 
 
     fun addPerformance(url: String, body: String) {
+        println("url = ${url} body = ${body}")
         val factory = HttpComponentsClientHttpRequestFactory()
         factory.setConnectTimeout(5000)
         val restTemplate = RestTemplate(factory)

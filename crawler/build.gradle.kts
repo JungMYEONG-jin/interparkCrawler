@@ -38,7 +38,8 @@ dependencies {
 	implementation("org.seleniumhq.selenium:selenium-java:4.10.0")
 	// rest template
 	implementation("org.apache.httpcomponents.client5:httpclient5:5.0.3")
-
+	// coroutine
+	implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
 
 }
 
