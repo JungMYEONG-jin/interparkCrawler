@@ -8,17 +8,48 @@ import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.support.ui.ExpectedConditions
 import org.openqa.selenium.support.ui.WebDriverWait
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpMethod
+import org.springframework.http.MediaType
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.stereotype.Service
+import org.springframework.web.client.RestTemplate
+import org.springframework.web.util.UriComponentsBuilder
 import java.time.Duration
 
 @Service
 class CrawlerService (
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    @Value("\${arton.access.token}")
+    var accessToken: String,
+    @Value("\${driver.google.path}")
+    var driverPath: String,
 )
 {
+    fun addPerformance(url: String, body: String) {
+        val factory = HttpComponentsClientHttpRequestFactory()
+        factory.setConnectTimeout(5000)
+        val restTemplate = RestTemplate(factory)
+        // set header option
+        val header = HttpHeaders()
+        header.set("Authorization", "Bearer $accessToken")
+        header.contentType = MediaType.APPLICATION_JSON
+        val entity = HttpEntity<String>(body, header)
+        // uri build
+        val uri = UriComponentsBuilder.fromHttpUrl("http://aws.hancy.kr:8333/performance/crawler").build()
+        // post
+        val resultMap = restTemplate.exchange(uri.toString(), HttpMethod.POST, entity, Map::class.java)
+        if (resultMap.statusCode.isError) {
+            throw RuntimeException("데이터 전송에 실패하였습니다..")
+        }
+    }
+
+
     fun getInfo(genre: String, baseUrl: String): String {
         val webDriverID = "webdriver.chrome.driver"
-        val webDriverPath = "/home/godcoder/interpark/crawler/src/main/resources/static/chromedriver"
+        val webDriverPath = System.getProperty("user.dir") + driverPath
 //		val webDriverPath = "/Users/a60156077/interpark/interparkCrawler/crawler/src/main/resources/static/chromedriver"
         System.setProperty(webDriverID, webDriverPath)
 

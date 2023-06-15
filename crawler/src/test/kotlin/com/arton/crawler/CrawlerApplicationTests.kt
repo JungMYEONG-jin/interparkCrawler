@@ -1,26 +1,23 @@
 package com.arton.crawler
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.Test
 import org.openqa.selenium.By
-import org.openqa.selenium.WebElement
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.chrome.ChromeOptions
-import org.openqa.selenium.support.ui.WebDriverWait
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.web.servlet.function.ServerResponse.async
-import java.time.Duration
 
 @SpringBootTest
 class CrawlerApplicationTests {
 
 	@Autowired
-	private lateinit var crawlerService: CrawlerService;
+	private lateinit var crawlerService: CrawlerService
+	@Value("\${driver.google.path}")
+	private lateinit var drivrPath: String
 	@Test
 	fun contextLoads() {
-
+		println("drivrPath = ${drivrPath}")
 	}
 
 
