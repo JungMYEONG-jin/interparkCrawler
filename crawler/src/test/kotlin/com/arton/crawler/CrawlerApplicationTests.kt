@@ -30,6 +30,9 @@ class CrawlerApplicationTests {
 
 	@Test
 	fun crawlerTest() {
-		crawlerService.travelInterPark()
+//		crawlerService.travelInterPark()
+		val dto =
+			crawlerService.getInfo("뮤지컬", "http://ticket.interpark.com/TIKI/Main/TikiGoodsInfo.asp?GoodsCode=23006287")
+		println("dto = ${dto}")
 	}
 }

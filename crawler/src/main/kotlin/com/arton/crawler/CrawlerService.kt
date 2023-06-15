@@ -101,6 +101,8 @@ class CrawlerService (
         if (resultMap.statusCode.isError) {
             throw RuntimeException("데이터 전송에 실패하였습니다..")
         }
+        val body = resultMap.body?.let { objectMapper.writeValueAsString(it) }
+        println("body = ${body}")
     }
 
 
@@ -190,6 +192,8 @@ class CrawlerService (
                                                 if (infoDesc.text.contains("개월")) {
                                                     age = (age.toInt() / 12).toString()
                                                 }
+                                                if (age == "")
+                                                    age = "0"
                                                 performanceCreateDTO.limitAge = age
                                             }
                                         }
@@ -246,19 +250,20 @@ class CrawlerService (
                     val castingList = castingElement.findElement(By.xpath("//div/ul[@class='castingList']"))
                     if (castingList != null) {
                         val listItems: List<WebElement> = castingList.findElements(By.tagName("li"))
+                        println("listItems = ${listItems.size}")
                         for (listItem in listItems) {
                             // image
-                            val imgElement = listItem.findElement(By.xpath("//div[@class='castingProfile']/img"))
+                            val imgElement = listItem.findElement(By.xpath("div[@class='castingTop']/a/div[@class='castingProfile']/img"))
+                            val nameElement = listItem.findElement(By.xpath("div[@class='castingInfo']/div[@class='castingName']"))
                             val imageUrl = imgElement.getAttribute("src").toString()
                             // name
-                            performanceCreateDTO.artists.add(ArtistCreateDTO(profileImageUrl = imageUrl, name = listItem.text))
+                            performanceCreateDTO.artists.add(ArtistCreateDTO(profileImageUrl = imageUrl, name = nameElement.text))
                         }
                     }
                 }
             } catch (e: Exception) {
-
+                println("e.toString() = ${e}")
             }
-
             return objectMapper.writeValueAsString(performanceCreateDTO)
         }catch (e: Exception){
 
