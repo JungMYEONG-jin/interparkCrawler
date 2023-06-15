@@ -38,3 +38,4 @@ out/
 
 ### token ###
 application-test.properties
+application-prod.properties
