@@ -14,10 +14,10 @@ class CrawlerApplicationTests {
 	@Autowired
 	private lateinit var crawlerService: CrawlerService
 	@Value("\${driver.google.path}")
-	private lateinit var drivrPath: String
+	private lateinit var driverPath: String
 	@Test
 	fun contextLoads() {
-		println("drivrPath = ${drivrPath}")
+		println("drivrPath = ${driverPath}")
 	}
 
 	@Test
@@ -28,16 +28,8 @@ class CrawlerApplicationTests {
 
 	@Test
 	fun crawlerTest() {
-//		val baseUrl: String = "https://tickets.interpark.com/goods/23007049"
-//		val baseUrl: String = "https://tickets.interpark.com/goods/23007654"
-//		val baseUrl: String = "https://tickets.interpark.com/goods/23005708"
-//		val info = crawlerService.getInfo("뮤지컬", "https://tickets.interpark.com/goods/23005374")
-//		println("info = ${info}")
-
-
 		val webDriverID = "webdriver.chrome.driver"
-		val webDriverPath = "/home/godcoder/interpark/crawler/src/main/resources/static/chromedriver"
-//		val webDriverPath = "/Users/a60156077/interpark/interparkCrawler/crawler/src/main/resources/static/chromedriver"
+		val webDriverPath = System.getProperty("user.dir") + driverPath
 		System.setProperty(webDriverID, webDriverPath)
 
 		// chrome option
@@ -46,7 +38,7 @@ class CrawlerApplicationTests {
 		options.addArguments("--start-maximized")
 		options.addArguments("--disable-popup-blocking")
 		options.addArguments("--disable-default-apps")
-		options.addArguments("--headless")
+//        options.addArguments("--headless")
 		// load
 		val driver = ChromeDriver(options)
 
@@ -62,7 +54,7 @@ class CrawlerApplicationTests {
 				val name = a.getAttribute("name")
 				when (name) {
 					"btn_genre_musical", "btn_genre_concert" -> {
-						var genre: String = "뮤지컬"
+						var genre = "뮤지컬"
 						if (name == "btn_genre_concert")
 							genre = "콘서트"
 						val Gp = obj.findElement(By.xpath("div[@class='Gp']"))
@@ -94,7 +86,7 @@ class CrawlerApplicationTests {
 		}catch (e: Exception){
 
 		}finally {
-		    driver.close()
+			driver.close()
 		}
 	}
 }
