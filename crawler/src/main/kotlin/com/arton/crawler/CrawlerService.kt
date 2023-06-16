@@ -32,6 +32,7 @@ class CrawlerService (
     var driverPath: String,
 )
 {
+    val threadPool: ThreadPoolExecutor = Executors.newFixedThreadPool(3) as ThreadPoolExecutor
     fun travelInterPark() {
         val webDriverID = "webdriver.chrome.driver"
         val webDriverPath = System.getProperty("user.dir") + driverPath
@@ -64,12 +65,30 @@ class CrawlerService (
                         val Gp = obj.findElement(By.xpath("div[@class='Gp']"))
                         val contents = Gp.findElements(By.xpath("div[@class='content']"))
                         // do crawling using coroutine
-                        for (content in contents) {
-                            val a = content.findElement(By.xpath("dl/dd[@class='name']/a"))
-                            val href = a.getAttribute("href")
-                            // do service
-                            val info = getInfo(genre, href)
-                            addPerformance("http://aws.hancy.kr:8333/performance/crawler", info)
+//                        for (content in contents) {
+//                            val a = content.findElement(By.xpath("dl/dd[@class='name']/a"))
+//                            val href = a.getAttribute("href")
+//                            // do service
+//                            val info = getInfo(genre, href)
+//                            addPerformance("http://aws.hancy.kr:8333/performance/crawler", info)
+//                        }
+                        val coroutineScope = CoroutineScope(Dispatchers.Default)
+                        runBlocking {
+                            withContext(coroutineScope.coroutineContext) {
+                                // Run your coroutines here
+                                contents.forEach { content ->
+                                    threadPool.submit {
+                                        coroutineScope.launch {
+                                            val a = content.findElement(By.xpath("dl/dd[@class='name']/a"))
+                                            val href = a.getAttribute("href")
+                                            // do service
+                                            val info = getInfo(genre, href)
+                                            addPerformance("http://aws.hancy.kr:8333/performance/crawler", info)
+                                        }
+                                    }
+                                }
+                            }
+                            threadPool.shutdown()
                         }
                     }
                 }
@@ -99,7 +118,7 @@ class CrawlerService (
         // post
         val resultMap = restTemplate.exchange(uri.toString(), HttpMethod.POST, entity, Map::class.java)
         if (resultMap.statusCode.isError) {
-            throw RuntimeException("데이터 전송에 실패하였습니다..")
+
         }
         val body = resultMap.body?.let { objectMapper.writeValueAsString(it) }
         println("body = ${body}")
@@ -229,10 +248,17 @@ class CrawlerService (
                                             performanceCreateDTO.musicalDateTime = dates
                                             // split date
                                             val split = dates.split("~")
-                                            performanceCreateDTO.startDate = split[0]
-                                            performanceCreateDTO.endDate = split[0]
+                                            var startDate = split[0]
+                                            var endDate = split[0]
                                             if (split.size == 2)
-                                                performanceCreateDTO.endDate = split[1]
+                                                endDate = split[1]
+                                            // 정규식 파싱
+                                            startDate = startDate.replace(Regex("[^0-9.]"), "")
+                                            endDate = endDate.replace(Regex("[^0-9.]"), "")
+                                            if (endDate == "")
+                                                endDate = startDate
+                                            performanceCreateDTO.startDate = startDate
+                                            performanceCreateDTO.endDate = endDate
                                         }
                                     }
                                 }
@@ -259,14 +285,6 @@ class CrawlerService (
             try {
                 val castingElement: WebElement? = driver.findElement(By.xpath("//div[@class='content casting']"))
                 if (castingElement != null) {
-                    try {
-                        val seeMore = castingElement.findElement(By.xpath("//div/a"))
-                        if (seeMore != null) {
-
-                        }
-                    } catch (e: Exception) {
-                        println("e ${e}")
-                    }
                     val castingList = castingElement.findElement(By.xpath("//div/ul[@class='castingList']"))
                     if (castingList != null) {
                         val listItems: List<WebElement> = castingList.findElements(By.tagName("li"))

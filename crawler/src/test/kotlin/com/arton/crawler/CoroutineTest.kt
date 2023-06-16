@@ -8,7 +8,9 @@ class CoroutineTest {
 
     @Test
     internal fun runBlockingTest() {
-
+        var a = "오픈런"
+        a = a.replace(Regex("[^0-9.]"), "")
+        println("a = ${a}")
     }
 
 }
