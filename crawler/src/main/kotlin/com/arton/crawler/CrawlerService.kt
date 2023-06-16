@@ -117,7 +117,7 @@ class CrawlerService (
         options.addArguments("--start-maximized")
         options.addArguments("--disable-popup-blocking")
         options.addArguments("--disable-default-apps")
-//        options.addArguments("--headless")
+        options.addArguments("--headless")
         // load
         val driver = ChromeDriver(options)
         val wait = WebDriverWait(driver, Duration.ofSeconds(5))
@@ -262,8 +262,7 @@ class CrawlerService (
                     try {
                         val seeMore = castingElement.findElement(By.xpath("//div/a"))
                         if (seeMore != null) {
-                            seeMore.click()
-//                            println("not null")
+
                         }
                     } catch (e: Exception) {
                         println("e ${e}")
@@ -276,9 +275,10 @@ class CrawlerService (
                             // image
                             val imgElement = listItem.findElement(By.xpath("div[@class='castingTop']/a/div[@class='castingProfile']/img"))
                             val nameElement = listItem.findElement(By.xpath("div[@class='castingInfo']/div[@class='castingName']"))
+                            var name = nameElement.getAttribute("textContent")
                             val imageUrl = imgElement.getAttribute("src").toString()
                             // name
-                            performanceCreateDTO.artists.add(ArtistCreateDTO(profileImageUrl = imageUrl, name = nameElement.text))
+                            performanceCreateDTO.artists.add(ArtistCreateDTO(profileImageUrl = imageUrl, name = name))
                         }
                     }
                 }
