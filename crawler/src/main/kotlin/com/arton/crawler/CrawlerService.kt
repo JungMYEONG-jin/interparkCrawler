@@ -61,6 +61,8 @@ class CrawlerService (
                 val a = obj.findElement(By.xpath("div[@class='obj_tit']/a"))
                 val name = a.getAttribute("name")
                 println("name = ${name}")
+                if(name == "btn_genre_musical")
+                    continue
                 when (name) {
                     "btn_genre_musical", "btn_genre_concert" -> {
                         var genre = "뮤지컬"
