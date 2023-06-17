@@ -71,41 +71,52 @@ class CrawlerService (
                         val Gp = obj.findElement(By.xpath("div[@class='Gp']"))
                         val contents = Gp.findElements(By.xpath("div[@class='content']"))
                         println("contents = ${contents.size}")
-
+                        for (content in contents) {
+                            val a = content.findElement(By.xpath("dl/dd[@class='name']/a"))
+                            val href = a.getAttribute("href")
+                            // do service
+                            val info = getInfo(genre, href)
+                            try {
+                                addPerformance("http://aws.hancy.kr:8333/performance/crawler", info)
+                                cnt++;
+                            } catch (e: Exception) {
+                                println("e = ${e}")
+                            }
+                        }
                         // do crawling using coroutine
                         val coroutineScope = CoroutineScope(Dispatchers.Default)
-                        runBlocking {
-                            withContext(coroutineScope.coroutineContext) {
-                                // Run your coroutines here
-                                contents.forEach { content ->
-                                    threadPool.submit {
-                                        coroutineScope.launch {
-                                            val a = content.findElement(By.xpath("dl/dd[@class='name']/a"))
-                                            val href = a.getAttribute("href")
-                                            // do service
-                                            val info = getInfo(genre, href)
-                                            try {
-                                                addPerformance("http://aws.hancy.kr:8333/performance/crawler", info)
-                                                cnt++;
-                                            } catch (e: Exception) {
-                                                println("e = ${e}")
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            threadPool.shutdown()
-                        }
+//                        runBlocking {
+//                            withContext(coroutineScope.coroutineContext) {
+//                                // Run your coroutines here
+//                                contents.forEach { content ->
+//                                    threadPool.submit {
+//                                        coroutineScope.launch {
+//                                            val a = content.findElement(By.xpath("dl/dd[@class='name']/a"))
+//                                            val href = a.getAttribute("href")
+//                                            // do service
+//                                            val info = getInfo(genre, href)
+//                                            try {
+//                                                addPerformance("http://aws.hancy.kr:8333/performance/crawler", info)
+//                                                cnt++;
+//                                            } catch (e: Exception) {
+//                                                println("e = ${e}")
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                            threadPool.shutdown()
+//                        }
                     }
                 }
             }
-            return cnt
         }catch (e: Exception){
 
         }finally {
             driver.close()
             return cnt
         }
+        return cnt
     }
 
 
@@ -147,7 +158,7 @@ class CrawlerService (
 //        options.addArguments("--headless")
         // load
         val driver = ChromeDriver(options)
-        val wait = WebDriverWait(driver, Duration.ofSeconds(5))
+        val wait = WebDriverWait(driver, Duration.ofSeconds(10))
         val performanceCreateDTO = PerformanceCreateDTO()
         try{
             driver.get(baseUrl)
