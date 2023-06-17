@@ -33,7 +33,8 @@ class CrawlerService (
 )
 {
     val threadPool: ThreadPoolExecutor = Executors.newFixedThreadPool(3) as ThreadPoolExecutor
-    fun travelInterPark() {
+    fun travelInterPark(): Int {
+        var cnt = 0;
         val webDriverID = "webdriver.chrome.driver"
         val webDriverPath = System.getProperty("user.dir") + driverPath
         System.setProperty(webDriverID, webDriverPath)
@@ -44,19 +45,22 @@ class CrawlerService (
         options.addArguments("--start-maximized")
         options.addArguments("--disable-popup-blocking")
         options.addArguments("--disable-default-apps")
-//        options.addArguments("--headless")
+        options.addArguments("--headless")
         // load
         val driver = ChromeDriver(options)
         val wait = WebDriverWait(driver, Duration.ofSeconds(5))
+        
         val baseUrl = "https://ticket.interpark.com/TiKi/Special/TPRegionReserve.asp?ImgYn=Y&Ca=&Region=42001&RegionName=%BC%AD%BF%EF"
         try{
             driver.get(baseUrl)
 
             val gp = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='Gp']")))
             val objs = gp.findElements(By.xpath("//div[@class='obj']"))
+            println("objs.size = ${objs.size}")
             for (obj in objs) {
                 val a = obj.findElement(By.xpath("div[@class='obj_tit']/a"))
                 val name = a.getAttribute("name")
+                println("name = ${name}")
                 when (name) {
                     "btn_genre_musical", "btn_genre_concert" -> {
                         var genre = "뮤지컬"
@@ -64,14 +68,9 @@ class CrawlerService (
                             genre = "콘서트"
                         val Gp = obj.findElement(By.xpath("div[@class='Gp']"))
                         val contents = Gp.findElements(By.xpath("div[@class='content']"))
+                        println("contents = ${contents.size}")
+
                         // do crawling using coroutine
-//                        for (content in contents) {
-//                            val a = content.findElement(By.xpath("dl/dd[@class='name']/a"))
-//                            val href = a.getAttribute("href")
-//                            // do service
-//                            val info = getInfo(genre, href)
-//                            addPerformance("http://aws.hancy.kr:8333/performance/crawler", info)
-//                        }
                         val coroutineScope = CoroutineScope(Dispatchers.Default)
                         runBlocking {
                             withContext(coroutineScope.coroutineContext) {
@@ -83,7 +82,12 @@ class CrawlerService (
                                             val href = a.getAttribute("href")
                                             // do service
                                             val info = getInfo(genre, href)
-                                            addPerformance("http://aws.hancy.kr:8333/performance/crawler", info)
+                                            try {
+                                                addPerformance("http://aws.hancy.kr:8333/performance/crawler", info)
+                                                cnt++;
+                                            } catch (e: Exception) {
+                                                println("e = ${e}")
+                                            }
                                         }
                                     }
                                 }
@@ -93,11 +97,12 @@ class CrawlerService (
                     }
                 }
             }
-
+            return cnt
         }catch (e: Exception){
 
         }finally {
             driver.close()
+            return cnt
         }
     }
 
@@ -129,6 +134,7 @@ class CrawlerService (
         val webDriverID = "webdriver.chrome.driver"
         val webDriverPath = System.getProperty("user.dir") + driverPath
         System.setProperty(webDriverID, webDriverPath)
+//        System.setProperty("webdriver.chrome.verboseLogging", "true");
 
         // chrome option
         val options: ChromeOptions = ChromeOptions()
@@ -136,7 +142,7 @@ class CrawlerService (
         options.addArguments("--start-maximized")
         options.addArguments("--disable-popup-blocking")
         options.addArguments("--disable-default-apps")
-        options.addArguments("--headless")
+//        options.addArguments("--headless")
         // load
         val driver = ChromeDriver(options)
         val wait = WebDriverWait(driver, Duration.ofSeconds(5))
@@ -154,7 +160,7 @@ class CrawlerService (
                     performanceCreateDTO.title = titleElement.text
                 }
             }catch (e: Exception){
-
+                println("e = ${e}")
             }
             // if pop up
             try {
@@ -172,6 +178,7 @@ class CrawlerService (
             // find summary info
             try {
                 val summaryElement = driver.findElement(By.xpath("//div[@class='summaryBody']"))
+//                val summaryElement = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='summaryBody']")))
                 if (summaryElement != null) {
                     val imgElement =
                         summaryElement.findElement(By.xpath("//div[@class='posterBox']/div[@class='posterBoxTop']/img"))

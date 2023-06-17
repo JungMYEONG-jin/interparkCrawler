@@ -24,14 +24,18 @@ class CrawlerApplicationTests {
 
 	@Test
 	fun addTest() {
-		crawlerService.travelInterPark()
+		val cnt = crawlerService.travelInterPark()
+		println("cnt = ${cnt}")
 	}
 
 	@Test
 	fun crawlerTest() {
 //		crawlerService.travelInterPark()
 		val dto =
-			crawlerService.getInfo("뮤지컬", "https://tickets.interpark.com/goods/23005207")
+//        options.addArguments("--headless")
+//        options.addArguments("--headless")
+			crawlerService.getInfo("콘서트", "http://ticket.interpark.com/TIKI/Main/TikiGoodsInfo.asp?GoodsCode=23008019")
+		crawlerService.addPerformance("http://aws.hancy.kr:8333/performance/crawler", dto)
 		println("dto = ${dto}")
 	}
 }
