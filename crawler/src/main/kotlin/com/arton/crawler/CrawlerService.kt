@@ -83,30 +83,6 @@ class CrawlerService (
                                 println("e = ${e}")
                             }
                         }
-                        // do crawling using coroutine
-                        val coroutineScope = CoroutineScope(Dispatchers.Default)
-//                        runBlocking {
-//                            withContext(coroutineScope.coroutineContext) {
-//                                // Run your coroutines here
-//                                contents.forEach { content ->
-//                                    threadPool.submit {
-//                                        coroutineScope.launch {
-//                                            val a = content.findElement(By.xpath("dl/dd[@class='name']/a"))
-//                                            val href = a.getAttribute("href")
-//                                            // do service
-//                                            val info = getInfo(genre, href)
-//                                            try {
-//                                                addPerformance("http://aws.hancy.kr:8333/performance/crawler", info)
-//                                                cnt++;
-//                                            } catch (e: Exception) {
-//                                                println("e = ${e}")
-//                                            }
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                            threadPool.shutdown()
-//                        }
                     }
                 }
             }
@@ -155,7 +131,7 @@ class CrawlerService (
         options.addArguments("--start-maximized")
         options.addArguments("--disable-popup-blocking")
         options.addArguments("--disable-default-apps")
-//        options.addArguments("--headless")
+        options.addArguments("--headless")
         // load
         val driver = ChromeDriver(options)
         val wait = WebDriverWait(driver, Duration.ofSeconds(10))

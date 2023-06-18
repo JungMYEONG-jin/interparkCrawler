@@ -24,8 +24,10 @@ class CrawlerApplicationTests {
 
 	@Test
 	fun addTest() {
-		val cnt = crawlerService.travelInterPark()
-		println("cnt = ${cnt}")
+		runBlocking {
+			val cnt = crawlerService.travelInterPark()
+			println("cnt = ${cnt}")
+		}
 	}
 
 	@Test
